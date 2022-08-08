@@ -2,6 +2,8 @@ import os
 import os.path as path
 import requests
 import pathlib
+import json
+from scipy.spatial import cKDTree
 
 
 class FileHandler:
@@ -50,3 +52,18 @@ def get_laz_tile(tilename):  # return a local filename
         print('Retrieved {0} ({1} bytes)'.format(url, len(data)))
         file_handler.write(tilename, data)
     return file_handler.get_filename(tilename)
+
+
+tile_index = json.load(open("tile_index.json"))
+names = []
+mid_points = []
+for name, (_, _, midp) in tile_index.items():
+    names.append(name)
+    mid_points.append(midp)
+tile_tree = cKDTree(mid_points)
+
+def get_tile_from_xy(x,y):
+    tile = names[tile_tree.query((x,y))[1]]
+    laz = tile.replace(".txt", ".laz")
+    local_fn = get_laz_tile(laz)
+    return local_fn
