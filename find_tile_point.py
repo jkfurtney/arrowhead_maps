@@ -12,6 +12,14 @@ plt.rcParams.update({'font.size': 18})
 cabin = 47.82009580911151, -90.10145633950037
 *cabin,_,_ = utm.from_latlon(*cabin)
 
+land_boundaries = ((47.820372,     -90.102616),
+                   (47.8185696,   -90.1026207),
+                   (47.8185901  -90.100027),
+                   (47.8203893  -90.1000255))
+
+# parcel ID
+# 55-229-3350
+
 time_index = json.load(open("tile_index.json"))
 
 names = []
@@ -35,3 +43,15 @@ cabin_tile = names[tree.query(cabin)[1]]
 cabin_laz = cabin_tile.replace(".txt", ".laz")
 
 local_fn = get_laz_tile(cabin_laz)
+
+import laspy
+import open3d as o3d
+
+las = laspy.read(local_fn)
+
+point_data = np.stack([las.X, las.Y, las.Z], axis=0).transpose((1, 0))
+geom = o3d.geometry.PointCloud()
+geom.points = o3d.utility.Vector3dVector(point_data)
+o3d.visualization.draw_geometries([geom])
+
+# how to look up
